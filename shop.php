@@ -74,7 +74,7 @@
                       </div>
                     </div>
                     <div class="product-btm">
-                        <h4><?php echo $data['label']; ?></h4>
+                        <h4><?php echo str_replace('_', ' ', $data['sku']); ?></h4>
                       <div class="mt-3">
                         <span class="mr-4"><?php echo $data['price']; ?></span>
                       </div>

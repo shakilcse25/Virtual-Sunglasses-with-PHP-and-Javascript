@@ -37,7 +37,7 @@
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-light w-100">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <a class="navbar-brand logo_h" href="index.html">
+        <a class="navbar-brand logo_h" href="">
           <!-- <img src="img/logo.png" alt="" /> -->
           <h3 style="color:#71cd14;"> <i>Sunglasses</i> </h3>
         </a>
