@@ -10,132 +10,189 @@ $db = new Database();
   $query->execute();
   $result = $query->fetch(PDO::FETCH_ASSOC);
 } ?>
+
 <!DOCTYPE html>
 <html>
   <head>
-    <title></title>
+    <title>JEELIZ VTO WIDGET INTEGRATION DEMO</title>
     <meta charset='utf-8' />
 
-    <!-- INCLUDE MAIN SCRIPT -->
-    <script type='text/javascript' src='https://appstatic.jeeliz.com/jeewidget/JeelizNNCwidget.js'></script>
+    <!-- Forbid resize on pinch with IOS Safari: -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
+    
+    <!-- INCLUDE MAIN SCRIPT: -->
+    <script src='js/JeelizVTOWidget.js'></script>
+
+    <!-- For icons adjust fame or resize canvas -->
     <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+
+    <!-- Font for the header only: -->
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+    
+    <!-- main stylesheet: -->
+    <link rel='stylesheet' href='css/JeelizVTOWidget.css' />
 
+    <script>
+      let _isResized = false;
 
-    <link rel="stylesheet" href="css/bootstrap.css" />
-    <link rel="stylesheet" href="vendors/linericon/style.css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" />
-    <link rel="stylesheet" href="css/themify-icons.css" />
-    <link rel="stylesheet" href="css/flaticon.css" />
-    <link rel="stylesheet" href="vendors/owl-carousel/owl.carousel.min.css" />
-    <link rel="stylesheet" href="vendors/lightbox/simpleLightbox.css" />
-    <link rel="stylesheet" href="vendors/nice-select/css/nice-select.css" />
-    <link rel="stylesheet" href="vendors/animate-css/animate.css" />
-    <link rel="stylesheet" href="vendors/jquery-ui/jquery-ui.css" />
-    <!-- main css -->
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/responsive.css" />
-
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type='text/javascript'>
-      // function which are used only for this functionnal test
       function test_resizeCanvas() {
-        const wid = document.getElementById('JeeWidget')
-        wid.style.width = '1000px'
+        // halves the height:
+        let halfHeightPx = Math.round(window.innerHeight / 2).toString() + 'px';
+        
+        const domWidget = document.getElementById('JeelizVTOWidget');
+        domWidget.style.maxHeight = (_isResized) ? 'none' : halfHeightPx;
+
+        _isResized = !_isResized;
       }
 
-      // main function, launched with body.onload()
+
+      function get_initialSKU(){
+        // look if a SKU is provided as a URL parameters:
+        const queryString = window.location.search;
+        const URLParams = new URLSearchParams(queryString);
+        const sku = '<?php echo $result['sku']; ?>';
+        // const sku = URLParams.get('sku') || 'rayban_aviator_or_vertFlash';
+        console.log('Initial SKU =', sku);
+        return sku;
+      }
+
+
+      function get_isShadow(){
+        const queryString = window.location.search;
+        const URLParams = new URLSearchParams(queryString);
+        return URLParams.get('isHideShadow') ? false : true;
+      }
+
+
+      // entry point:
       function main() {
-        JEEWIDGET.start({
-          sku: '<?php echo $result['sku']; ?>',
+        JEELIZVTOWIDGET.start({
+          isShadow: get_isShadow(),
+          sku: get_initialSKU(),
           searchImageMask: 'https://appstatic.jeeliz.com/jeewidget/images/target.png',
-          searchImageColor: 0xff0000,
+          searchImageColor: 0xeeeeee,
+          callbackReady: function(){
+            console.log('INFO: JEELIZVTOWIDGET is ready :)');
+
+            // add a LUT to change video rendering:
+            //JEELIZVTOWIDGET.set_LUT('images/LUTs/LUTGrayscale.png');
+            //JEELIZVTOWIDGET.set_LUT('images/LUTs/LUTImprove.jpg');
+          },
           onError: function(errorLabel){ // this function catches errors, so you can display custom integrated messages
             alert('An error happened. errorLabel =' + errorLabel)
             switch(errorLabel) {
+              case 'WEBCAM_UNAVAILABLE':
+                // the user has no camera, or does not want to share it.
+                break;
+          
               case 'NOFILE':
                 // the user send an image, but it is not here
-                break
+                break;
 
               case 'WRONGFILEFORMAT':
                 // the user upload a file which is not an image or corrupted
-                break
+                break;
 
-              case 'INVALIDSKU':
+              case 'INVALID_SKU':
                 // the provided SKU does not match with a glasses model
-                break
+                break;
 
-              case 'FALLBACKUNAVAILABLE':
-                // we cannot switch to file upload mode. browser too old ?
-                break
+              case 'FALLBACK_UNAVAILABLE':
+                // we cannot switch to file upload mode. browser too old?
+                break;
 
+              case 'PLACEHOLDER_NULL_WIDTH':
+              case 'PLACEHOLDER_NULL_HEIGHT':
+                // Something is wrong with the placeholder
+                // (element whose id='JeelizVTOWidget')
+                break;
+                
               case 'FATAL':
               default:
-                // a bit error happens :(
-                break
+                // a bit error happens:(
+                break;
             } // end switch
           } // end onError()
-        }) // end JEEWIDGET.start call
+        }) // end JEELIZVTOWIDGET.start call
       } // end main()
-    </script>
 
-    <!-- A BIT OF STYLING... -->
-    <link rel='stylesheet' href='css/JeeWidgetPublicGit.css' />
+
+      function load_modelBySKU(){
+        const sku = prompt('Please enter a glasses model SKU:', 'rayban_wayfarer_havane_marron');
+        if (sku){
+          JEELIZVTOWIDGET.load(sku);
+        }
+      }
+
+    </script>
   </head>
 
   <body onload="main()">
-    <div class="mynav">
-        <?php include 'inc/navbar.php'; ?>
-    </div>
+    <div class='content'>
 
-    <main>
-      <!-- BEGIN JEEWIDGET -->
-      <div id='JeeWidget'>
-        <!-- MAIN CANVAS : --><canvas id='JeeWidgetCanvas'></canvas>
-        <!-- BEGIN UPLOAD PICTURE BUTTON -->
-          <div class='JeeWidgetHiddenFileInput'>
-             <input type='file' id='JeeWidgetFileInput' />
-          </div>
 
-          <button id='JeeWidgetFileInputButton'><div class="buttonIcon"><i class="far fa-image"></i></div>Try on a picture</button>
-        <!-- END UPLOAD PICTURE BUTTON -->
-        <!-- BACK TO REALTIME VIDEO BUTTON : --><button id='JeeWidgetBackToRealtimeButton'>Back to video</button>
-        <!-- ADJUST BUTTON : -->
-        <div class='JeeWidgetBottomButton' id='JeeWidgetAdjust'>
-          <div class="buttonIcon"><i class="fas fa-arrows-alt"></i></div>Adjust the frame
+      <div class='header'>
+        <div class="headerTitle">
+          Jeeliz VTO Widget
+        </div>      
+      </div>
+
+
+      <!-- Please keep the same element IDs so that JEELIZVTOWIDGET can extract them from the DOM -->
+
+      <!-- BEGIN JEELIZVTOWIDGET -->
+      <!-- 
+        div with id='JeelizVTOWidget' is the placeholder
+        you need to size and position it according to where the VTO widget should be
+        if you resize it, the widget will be automatically resized
+      -->
+      <div id='JeelizVTOWidget'>
+        <!-- MAIN CANVAS: -->
+        <!-- 
+         canvas with id='JeelizVTOWidgetCanvas' is the canvas where the VTO widget will be rendered
+         it should have CSS attribute position: absolute so that it can be resized without
+         changing the total size of the placeholder
+        -->
+        <canvas id='JeelizVTOWidgetCanvas'></canvas>
+        
+        <div class='JeelizVTOWidgetControls JeelizVTOWidgetControlsTop'>
+          <!-- ADJUST BUTTON: -->
+          <button id='JeelizVTOWidgetAdjust'>
+            <div class="buttonIcon"><i class="fas fa-arrows-alt"></i></div>Adjust
+          </button>
+
+          <!-- RESIZE WIDGET BUTTON: -->
+          <button id='buttonResizeCanvas' onclick='test_resizeCanvas();'>
+            <div class="buttonIcon"><i class="fas fa-sync-alt"></i></div>Resize widget
+          </button>
         </div>
-        <button id='buttonResizeCanvas' class='JeeWidgetBottomButton buttonResize' onclick='test_resizeCanvas();'><div class="buttonIcon"><i class="fas fa-sync-alt"></i></div>Resize canvas</button>
+
+        <!-- CHANGE MODEL BUTTONS: -->
+        <div class='JeelizVTOWidgetControls' id='JeelizVTOWidgetChangeModelContainer'>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_aviator_or_vertFlash')">Model 1</button>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_round_cuivre_pinkBrownDegrade')">Model 2</button>
+          <button onclick="JEELIZVTOWIDGET.load_modelStandalone('glasses3D/glasses1.json')">Model 3</button>
+          <button onclick="load_modelBySKU()">by SKU</button>
+        </div>
 
         <!-- BEGIN ADJUST NOTICE -->
-        <div id='JeeWidgetAdjustNotice'>
-          You can move the glasses yeah !
-          <button class='JeeWidgetBottomButton' id='JeeWidgetAdjustExit'>Quit</button>
+        <div id='JeelizVTOWidgetAdjustNotice'>
+          Move the glasses to adjust them.
+          <button class='JeelizVTOWidgetBottomButton' id='JeelizVTOWidgetAdjustExit'>Quit</button>
         </div>
         <!-- END AJUST NOTICE -->
 
-        <!-- BEGIN LOADING -->
-        <div id='JeeWidgetLoading'>
-           <div class='JeeWidgetLoadingWheel'>
-              <svg viewBox='0 0 32 32' width='32' height='32'>
-                <circle id='spinner' cx='16' cy='16' r='14' fill='none' />
-              </svg>
+        <!-- BEGIN LOADING WIDGET (not model) -->
+        <div id='JeelizVTOWidgetLoading'>
+           <div class='JeelizVTOWidgetLoadingText'>
+              LOADING...
             </div>
         </div>
         <!-- END LOADING -->
-        <!-- BEGIN FALLBACK (upload picture) NOTICE -->
-        <!--div id='JeeWidgetUploadNotice'>
-          Please upload a picture to tryon your glasses
-          <div class='JeeWidgetHiddenFileInput'>
-             <input type='file' id='JeeWidgetFileInputNotice' />
-          </div>
-          <button id='JeeWidgetFileInputButtonNotice'>Choose image from file</button>
-        </div-->
-        <!-- END FALLBACK (upload picture) NOTICE -->
-
-
 
       </div>
-      <!-- END JEEWIDGET -->
-    </main>
+    </div>
+  </body>
+</html>
+
 <?php include 'inc/footer.php'; ?>

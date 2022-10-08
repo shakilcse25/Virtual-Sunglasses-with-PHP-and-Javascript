@@ -68,7 +68,7 @@ Session::init();
         echo " <p style='red'>Username or Password is empty.</p> ";
       }
       else{
-        $password = md5($password);
+        // $password = md5($password);
 
         $sql = "select * from admin where username = :username and password = :password limit 1";
         $query = $db->link->prepare($sql);
